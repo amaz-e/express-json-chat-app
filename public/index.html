@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat App</title>
+  <meta http-equiv="refresh" content="30">
+</head>
+<body>
+  <h1>Chat Messages</h1>
+  <ul id="messages"></ul>
+
+  <form id="messageForm">
+    <input type="text" id="messageInput" placeholder="Enter your message" required>
+    <button type="submit">Send</button>
+  </form>
+  
+  <script>
+    function getMessages() {
+      fetch('/messages')
+        .then(response => response.json())
+        .then(messages => {
+          const messagesList = document.getElementById('messages');
+          messagesList.innerHTML = '';
+
+          messages.forEach(message => {
+            const li = document.createElement('li');
+            li.textContent = `${message.timestamp}: ${message.text}`;
+            messagesList.appendChild(li);
+          });
+        });
+    }
+
+    function postMessage(event) {
+      event.preventDefault();
+      const messageInput = document.getElementById('messageInput');
+      const message = messageInput.value.trim();
+
+      if (message === '') {
+        alert('Please enter a message.');
+        return;
+      }
+
+      fetch('/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: message })
+      })
+      .then(response => response.json())
+      .then(data => {
+        messageInput.value = '';
+        getMessages();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+
+    document.getElementById('messageForm').addEventListener('submit', postMessage);
+
+    getMessages();
+    setInterval(getMessages, 30000);
+  </script>
+</body>
+</html>
